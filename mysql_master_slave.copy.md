@@ -66,6 +66,13 @@ log_slave_updates=1
 read_only=1
 ```
 
-```
-# config master-slave copy
+```sql
+change master to master_host='宿主机ip', master_user='slave', master_password='123456', master_port=3307, master_log_file='mall-mysql-bin.000001', master_log_pos=617, master_connect_retry=30;  
+-- master_host：主数据库的IP地址；
+-- master_port：主数据库的运行端口；
+-- master_user：在主数据库创建的用于同步数据的用户账号；
+-- master_password：在主数据库创建的用于同步数据的用户密码；
+-- master_log_file：指定从数据库要复制数据的日志文件，通过查看主数据的状态，获取File参数；
+-- master_log_pos：指定从数据库从哪个位置开始复制数据，通过查看主数据的状态，获取Position参数；
+-- master_connect_retry：连接失败重试的时间间隔，单位为秒。 
 ```
