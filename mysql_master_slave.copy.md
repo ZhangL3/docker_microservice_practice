@@ -1,3 +1,5 @@
+- run mysql-master
+
 ```sh
 docker run -p 3307:3306 --name mysql-master \
 -v /mydata/mysql-master/log:/var/log/mysql \
@@ -6,6 +8,8 @@ docker run -p 3307:3306 --name mysql-master \
 -e MYSQL_ROOT_PASSWORD=root \
 -d mysql:5.7
 ```
+
+- config mysql-master in /mydata/mysql-master/conf/my.conf
 
 ```sh
 [mysqld]
@@ -26,11 +30,20 @@ expire_logs_days=7
 slave_skip_errors=1062
 ```
 
+- generate account and permission for slave
+- mark the position proerty!!
+
 ```mysql
+-- in mysql-master
 mysql -uroot -p
 CREATE USER 'slave'@'%' IDENTIFIED BY '123456';
 GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'slave'@'%';
+
+show master stauts;
+-- !!position!!
 ```
+
+- run mysql-slave
 
 ```sh
 docker run -p 3308:3306 --name mysql-slave \
@@ -40,6 +53,8 @@ docker run -p 3308:3306 --name mysql-slave \
 -e MYSQL_ROOT_PASSWORD=root \
 -d mysql:5.7
 ```
+
+- config mysql-slave in /mydata/mysql-slave/conf/my.conf
 
 ```sh
 [mysqld]
@@ -66,8 +81,11 @@ log_slave_updates=1
 read_only=1
 ```
 
+- config slave to connect to master
+
 ```sql
-change master to master_host='宿主机ip', master_user='slave', master_password='123456', master_port=3307, master_log_file='mall-mysql-bin.000001', master_log_pos=617, master_connect_retry=30;  
+-- in mysql-slave
+change master to master_host='宿主机ip', master_user='slave', master_password='123456', master_port=3307, master_log_file='mall-mysql-bin.000001', master_log_pos=!!position!!, master_connect_retry=30;  
 -- master_host：主数据库的IP地址；
 -- master_port：主数据库的运行端口；
 -- master_user：在主数据库创建的用于同步数据的用户账号；
@@ -75,4 +93,20 @@ change master to master_host='宿主机ip', master_user='slave', master_password
 -- master_log_file：指定从数据库要复制数据的日志文件，通过查看主数据的状态，获取File参数；
 -- master_log_pos：指定从数据库从哪个位置开始复制数据，通过查看主数据的状态，获取Position参数；
 -- master_connect_retry：连接失败重试的时间间隔，单位为秒。 
+```
+
+- start slave mode
+
+```sql
+-- in mysql-slave
+
+show slave stauts \G;
+-- Slave_IO_Running: No
+-- Slave_SQL_Running: No
+
+start slave
+
+show slave stauts \G;
+-- Slave_IO_Running: Yes
+-- Slave_SQL_Running: Yes
 ```
