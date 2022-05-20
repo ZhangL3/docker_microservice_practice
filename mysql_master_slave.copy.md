@@ -31,11 +31,14 @@ slave_skip_errors=1062
 ```
 
 - generate account and permission for slave
-- mark the position proerty!!
+- mark the !!position!! property
+
+```sh
+mysql -uroot -p
+```
 
 ```mysql
 -- in mysql-master
-mysql -uroot -p
 CREATE USER 'slave'@'%' IDENTIFIED BY '123456';
 GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'slave'@'%';
 
