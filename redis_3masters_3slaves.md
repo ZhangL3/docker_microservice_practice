@@ -229,8 +229,11 @@ S: 45e7e8741e2bd535d1c09b7f5dcbc92522ab03b5 192.148.124.129:6381
 redistribute slots
 
 ```
-# in node 3
-redis-cli --custer --reshard 192.148.124.129:6381
+redis-cli --cluster reshard 192.148.124.129:6383
+How many slots do you want to move ? 4096
+What is the receiving node ID? CLUSTER_ID 6387
+Source node #1: all
+...
 
 root@lezhang-Lubuntu:/data# redis-cli --cluster check 192.148.124.129:6387
 192.148.124.129:6387 (c524533a...) -> 1 keys | 4096 slots | 0 slaves.
@@ -339,4 +342,28 @@ S: 3dfd7f1b29b800d79f8ebd689dfa58e2e410e925 192.148.124.129:6388
 >>> Check for open slots...                                                                  
 >>> Check slots coverage...
 [OK] All 16384 slots covered.
+```
+
+schrink redis cluster
+
+```
+# remove slave 6388
+root@lezhang-Lubuntu:/data# redis-cli --cluster del-node 192.148.124.129:6388 3dfd7f1b29b800d79f8ebd689dfa58e2e410e925
+>>> Removing node 3dfd7f1b29b800d79f8ebd689dfa58e2e410e925 from cluster 192.148.124.129:6388
+>>> Sending CLUSTER FORGET messages to the cluster...
+>>> Sending CLUSTER RESET SOFT to the deleted node.
+```
+
+```
+# redistribute all slots from 6387 to 6383
+redis-cli --cluster reshard 192.148.124.129:6383
+How many slots do you want to move ? 4096
+What is the receiving node ID? CLUSTER_ID 6383
+Source node #1: CLUSTER_ID 6387
+Source node #2: done
+...
+```
+
+```
+# remove master 6087
 ```
